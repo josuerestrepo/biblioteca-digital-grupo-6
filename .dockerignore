@@ -1,0 +1,15 @@
+target/
+.mvn/
+mvnw
+mvnw.cmd
+.git/
+.gitignore
+.vscode/
+.idea/
+*.log
+.env
+Dockerfile
+render.yaml
+docs/
+
+docker run -p 8080:8080 -e DB_URL=jdbc:postgresql://db.prisma.io:5432/postgres?sslmode=require alquimia-literaria  

@@ -2,6 +2,7 @@ package com.grupo6.biblioteca_digital.model.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.grupo6.biblioteca_digital.Enums.EstadoPrestamo;
 
 import jakarta.persistence.Column;
@@ -21,6 +22,7 @@ public class PrestamosEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
+    @JsonIgnoreProperties({"compras", "prestamos", "password"})
     private ClienteEntity cliente;
 
     @ManyToOne(fetch = FetchType.LAZY)

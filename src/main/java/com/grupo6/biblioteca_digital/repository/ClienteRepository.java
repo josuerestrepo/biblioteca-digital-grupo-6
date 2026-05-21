@@ -11,6 +11,6 @@ import com.grupo6.biblioteca_digital.Enums.TipoIdentidad;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<ClienteEntity, Long> {
-    //por si se quiere llamar al cliente por el numero de identidad (es totalmente opcional)
+    Optional<ClienteEntity> findByNumeroIdentidad(String numeroIdentidad);
     Optional<ClienteEntity> findByTipoIdentidad(TipoIdentidad tipoIdentidad);
 }

@@ -2,6 +2,7 @@ package com.grupo6.biblioteca_digital.model.entity;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.grupo6.biblioteca_digital.Enums.Rol;
 import com.grupo6.biblioteca_digital.Enums.TipoIdentidad;
 import com.grupo6.biblioteca_digital.model.embeddable.Contacto;
@@ -25,6 +26,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
+@JsonIgnoreProperties({"compras", "prestamos", "password"})
 @Table(name = "clientes")
 public class ClienteEntity extends BaseEntity {
     
