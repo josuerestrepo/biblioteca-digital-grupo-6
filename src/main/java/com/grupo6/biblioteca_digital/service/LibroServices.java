@@ -178,7 +178,11 @@ public class LibroServices {
 
         entity.setTitulo(dto.getTitulo());
 
+        entity.setAutor(dto.getAutor());
+
         entity.setCantidad(dto.getCantidad());
+
+        entity.setIsbn(dto.getIsbn());
 
         entity.setPrecio(dto.getPrecio());
 
@@ -205,6 +209,8 @@ private LibroDTO toDTO(LibroEntity entity) {
     dto.setEstado(entity.getEstado() == com.grupo6.biblioteca_digital.Enums.EstadoLibro.DISPONIBLE);
 
     dto.setCategoria(entity.getCategoria().getNombre());
+
+    dto.setEditorial(entity.getEditorial());
 
     return dto;
 }

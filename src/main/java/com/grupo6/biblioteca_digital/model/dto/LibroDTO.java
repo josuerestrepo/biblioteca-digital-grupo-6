@@ -10,6 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Data
 @Schema(description = "DTO que representa un libro")
 public class LibroDTO {
 
@@ -36,4 +37,13 @@ public class LibroDTO {
     @NotBlank(message = "La categoría es obligatoria")
     @Schema(description = "Categoría del libro", example = "Terror", requiredMode = Schema.RequiredMode.REQUIRED)
     private String categoria;
+
+    @Schema(description = "Autor del libro", example = "Bram Stoker")
+    private String autor;
+
+    @Schema(description = "ISBN del libro", example = "978-0141439577")
+    private String isbn;
+
+    @Schema(description = "Editorial del libro", example = "Penguin Classics")
+    private String editorial;
 }
