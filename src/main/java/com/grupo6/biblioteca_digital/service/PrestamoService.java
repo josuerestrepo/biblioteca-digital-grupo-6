@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.grupo6.biblioteca_digital.Enums.EstadoPrestamo;
+import com.grupo6.biblioteca_digital.exception.BadRequestException;
+import com.grupo6.biblioteca_digital.exception.ResourceNotFoundException;
 import com.grupo6.biblioteca_digital.model.dto.PrestamoCreateDTO;
 import com.grupo6.biblioteca_digital.model.dto.PrestamoDTO;
 import com.grupo6.biblioteca_digital.model.entity.ClienteEntity;
@@ -40,7 +42,7 @@ public class PrestamoService {
     public PrestamoDTO buscarPorId(Long id) {
         return prestamoRepository.findById(id)
                 .map(this::toDTO)
-                .orElseThrow(() -> new RuntimeException("Préstamo no encontrado con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Préstamo no encontrado con ID: " + id));
     }
 
     // 3. REGISTRAR PRESTAMO (El corazón del Service)
@@ -48,15 +50,15 @@ public class PrestamoService {
     public PrestamoDTO registrarPrestamo(PrestamoCreateDTO dto) {
         // A. Validar que el cliente existe
         ClienteEntity cliente = clienteRepository.findById(dto.clienteId())
-                .orElseThrow(() -> new RuntimeException("Error: El cliente con ID " + dto.clienteId() + " no existe."));
+                .orElseThrow(() -> new ResourceNotFoundException("Error: El cliente con ID " + dto.clienteId() + " no existe."));
 
         // B. Validar que el libro existe
         LibroEntity libro = libroRepository.findById(dto.libroId())
-                .orElseThrow(() -> new RuntimeException("Error: El libro con ID " + dto.libroId() + " no existe."));
+                .orElseThrow(() -> new ResourceNotFoundException("Error: El libro con ID " + dto.libroId() + " no existe."));
 
-        // C. Lógica de Negocio: Verificar stock
+        // C. Lógica de negocio: Verificar stock
         if (libro.getCantidad() == null || libro.getCantidad() <= 0) {
-            throw new RuntimeException("No hay ejemplares disponibles de '" + libro.getTitulo() + "' para préstamo.");
+            throw new BadRequestException("No hay ejemplares disponibles de '" + libro.getTitulo() + "' para préstamo.");
         }
 
         // D. Actualizar el libro (Restar 1 y refrescar estado)
@@ -82,10 +84,10 @@ public class PrestamoService {
     @Transactional
     public void devolverLibro(Long prestamoId) {
         PrestamosEntity prestamo = prestamoRepository.findById(prestamoId)
-                .orElseThrow(() -> new RuntimeException("Préstamo no encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Préstamo no encontrado"));
 
         if (prestamo.getEstado() == EstadoPrestamo.DEVUELTO) {
-            throw new RuntimeException("Este préstamo ya fue devuelto anteriormente.");
+            throw new BadRequestException("Este préstamo ya fue devuelto anteriormente.");
         }
 
         // Marcar préstamo como devuelto

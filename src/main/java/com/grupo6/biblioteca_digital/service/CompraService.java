@@ -1,5 +1,7 @@
 package com.grupo6.biblioteca_digital.service;
 
+import com.grupo6.biblioteca_digital.exception.BadRequestException;
+import com.grupo6.biblioteca_digital.exception.ResourceNotFoundException;
 import com.grupo6.biblioteca_digital.model.dto.CompraCreateDTO;
 import com.grupo6.biblioteca_digital.model.dto.CompraDTO;
 import com.grupo6.biblioteca_digital.model.entity.ClienteEntity;
@@ -49,14 +51,14 @@ public class CompraService {
 
         //primero revisar si hay un cliente con el ID y un libro con el ID,
         ClienteEntity cliente = clienteRepository.findById(dto.clienteId())
-        .orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID:" + dto.clienteId()));
+        .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con ID: " + dto.clienteId()));
 
         LibroEntity libro = libroRepository.findById(dto.libroId())
-        .orElseThrow(() -> new RuntimeException("Libro no encontrado con ID: " + dto.libroId()));
+        .orElseThrow(() -> new ResourceNotFoundException("Libro no encontrado con ID: " + dto.libroId()));
 
-        //logica de negocio ¿hay suficientes libros en stock?:
-        if (libro.getCantidad() < dto.cantidad()) {
-            throw new RuntimeException("Ya no hay suficientes libros en stock para esta compra (stocke actual: " + libro.getCantidad() + ")");
+        // lógica de negocio: ¿hay suficientes libros en stock?
+        if (libro.getCantidad() == null || libro.getCantidad() < dto.cantidad()) {
+            throw new BadRequestException("Ya no hay suficientes libros en stock para esta compra (stock actual: " + libro.getCantidad() + ")");
         }
 
         //Actualizar el stock del libro resteando la cantidad comprada

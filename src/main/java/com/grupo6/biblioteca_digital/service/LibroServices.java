@@ -5,6 +5,8 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.grupo6.biblioteca_digital.exception.BadRequestException;
+import com.grupo6.biblioteca_digital.exception.ResourceNotFoundException;
 import com.grupo6.biblioteca_digital.model.dto.LibroDTO;
 import com.grupo6.biblioteca_digital.model.entity.CategoriaEntity;
 import com.grupo6.biblioteca_digital.model.entity.LibroEntity;
@@ -54,7 +56,7 @@ public class LibroServices {
     public void eliminarLibro(Long id) {
 
         if (!libroRepository.existsById(id)) {
-            throw new RuntimeException("Libro no encontrado");
+            throw new ResourceNotFoundException("Libro no encontrado");
         }
 
         libroRepository.deleteById(id);
@@ -69,15 +71,15 @@ public class LibroServices {
         // ========= VALIDACIONES =========
 
         if (libroDTO.getTitulo() == null || libroDTO.getTitulo().isBlank()) {
-            throw new RuntimeException("El título es obligatorio");
+            throw new BadRequestException("El título es obligatorio");
         }
 
-        if (libroDTO.getCantidad() <= 0) {
-            throw new RuntimeException("La cantidad debe ser mayor a 0");
+        if (libroDTO.getCantidad() == null || libroDTO.getCantidad() <= 0) {
+            throw new BadRequestException("La cantidad debe ser mayor a 0");
         }
 
         if (libroDTO.getCategoria() == null || libroDTO.getCategoria().isBlank()) {
-            throw new RuntimeException("La categoría es obligatoria");
+            throw new BadRequestException("La categoría es obligatoria");
         }
 
         // ========= BUSCAR O CREAR CATEGORIA =========
@@ -133,7 +135,7 @@ public class LibroServices {
 
         LibroEntity libro = libroRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Libro no encontrado"));
+                        new ResourceNotFoundException("Libro no encontrado"));
 
         libro.setTitulo(libroDTO.getTitulo());
 

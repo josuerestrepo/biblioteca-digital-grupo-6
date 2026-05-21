@@ -3,6 +3,7 @@ package com.grupo6.biblioteca_digital.Controller;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
 
 import com.grupo6.biblioteca_digital.model.dto.LibroDTO;
 import com.grupo6.biblioteca_digital.service.LibroServices;
@@ -132,12 +135,12 @@ public class LibroController {
                 )
             )
 
-            @RequestBody LibroDTO libroDTO) {
+            @Valid @RequestBody LibroDTO libroDTO) {
 
         LibroDTO nuevo =
                 libroServices.guardarLibroDTO(libroDTO);
 
-        return ResponseEntity.ok(nuevo);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
     }
 
 
@@ -168,7 +171,7 @@ public class LibroController {
 
             @PathVariable Long id,
 
-            @RequestBody LibroDTO libroDTO) {
+            @Valid @RequestBody LibroDTO libroDTO) {
 
         LibroDTO actualizado =
                 libroServices.actualizarLibro(id, libroDTO);

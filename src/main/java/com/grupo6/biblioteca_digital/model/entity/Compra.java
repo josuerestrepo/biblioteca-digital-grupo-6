@@ -1,5 +1,6 @@
 package com.grupo6.biblioteca_digital.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,6 +20,7 @@ public class Compra extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false) // Asegura que el nombre de la columna sea cliente_id
+    @JsonIgnoreProperties({"compras", "prestamos", "password"})
     private ClienteEntity cliente;
 
     @ManyToOne(fetch = FetchType.LAZY)

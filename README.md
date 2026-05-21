@@ -56,7 +56,7 @@ Desarrollar una plataforma web que facilite el acceso a la lectura digital media
 - **Backend:** Spring Boot 3.x, Java 21, Spring Data JPA, PostgreSQL
 - **Frontend:** React
 - **Base de datos:** Prisma, PostgreSQL en producción / H2
-- **Otras herramientas:** Git, GitHub, Postman, Swagger, Docker (posible implementación futura)
+- **Otras herramientas:** Git, GitHub, Postman, Swagger, Docker
 
 ---
 
@@ -102,15 +102,18 @@ cd biblioteca-digital-grupo-6
 
 ### 3. Configurar la Base de Datos
 
-Para que Spring Boot 3.2.5 gestione la persistencia, debes configurar el archivo src/main/resources/application.properties. A continuación se presentan los dos escenarios requeridos:
+Este proyecto utiliza variables de entorno para la configuración de PostgreSQL. Crea un archivo `.env` en la raíz del proyecto con estas variables:
 
-Escenario A: Configuración para PostgreSQL (Producción/Local)
+DB_URL=jdbc:postgresql://localhost:5432/alquimia_db
+DB_USERNAME=tu_usuario
+DB_PASSWORD=tu_contraseña
 
-spring.datasource.url=jdbc:postgresql://localhost:5432/alquimia_db
-spring.datasource.username=tu_usuario
-spring.datasource.password=tu_contraseña
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
+El archivo `src/main/resources/application.properties` ya está preparado para importar estas variables mediante:
+
+spring.config.import=optional:file:.env[.properties]
+
+Si prefieres no usar un archivo `.env`, puedes definir las mismas variables en tu entorno antes de ejecutar la aplicación.
+
 Escenario B: Configuración para H2 (Base de datos en memoria para pruebas)
 
 spring.datasource.url=jdbc:h2:mem:testdb
@@ -131,6 +134,16 @@ Una vez configurada la base de datos, compila y ejecuta el backend utilizando el
 # En sistemas Windows:
 
 mvnw.cmd spring-boot:run
+
+### 5. Ejecutar con Docker
+
+Construye la imagen y ejecuta el contenedor con las variables de entorno de la base de datos:
+
+```bash
+docker build -t alquimia-literaria .
+docker run -e DB_URL=jdbc:postgresql://localhost:5432/alquimia_db -e DB_USERNAME=tu_usuario -e DB_PASSWORD=tu_contraseña -p 8080:8080 alquimia-literaria
+```
+
 Nota: El servidor se iniciará por defecto en el puerto 8080. Puedes verificar que la API está activa accediendo a la documentación de Swagger en http://localhost:8080/swagger-ui/index.html.
 
 # Biblioteca Spring Boot - Módulo de Categoría y Libro

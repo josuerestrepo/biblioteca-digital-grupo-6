@@ -1,56 +1,65 @@
 package com.grupo6.biblioteca_digital.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.grupo6.biblioteca_digital.Enums.Rol;
+import com.grupo6.biblioteca_digital.exception.BadRequestException;
+import com.grupo6.biblioteca_digital.exception.ResourceNotFoundException;
 import com.grupo6.biblioteca_digital.model.dto.ClienteDTO;
 import com.grupo6.biblioteca_digital.model.dto.ClienteRegistroDTO;
 import com.grupo6.biblioteca_digital.model.embeddable.Contacto;
 import com.grupo6.biblioteca_digital.model.entity.ClienteEntity;
-import com.grupo6.biblioteca_digital.service.ClienteService;
 import com.grupo6.biblioteca_digital.repository.ClienteRepository;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import com.grupo6.biblioteca_digital.service.ClienteService;
 
 @Service
-public class ClienteServiceImpl implements ClienteService { // Una sola 'l'
+public class ClienteServiceImpl implements ClienteService {
 
-    @Autowired
-    private ClienteRepository repository; // 'repository' en minúscula es mejor práctica
+    private final ClienteRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
-@Override
-public ClienteDTO registrar(ClienteRegistroDTO dto) {
-    // 1. Mapeamos manualmente para incluir los campos nuevos
-    ClienteEntity entidad = new ClienteEntity();
-    entidad.setNombre(dto.getNombre());
-    entidad.setApellido(dto.getApellido());
-    entidad.setTipoIdentidad(dto.getTipoIdentidad());
-    entidad.setNumeroIdentidad(dto.getNumeroIdentidad());
-    
-    // Configurar contacto (como ya lo haces)
-    Contacto con = new Contacto();
-    con.setEmail(dto.getEmail());
-    con.setTelefono(dto.getTelefono());
-    con.setDireccion(dto.getDireccion());
-    entidad.setContacto(con);
+    public ClienteServiceImpl(ClienteRepository repository, PasswordEncoder passwordEncoder) {
+        this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-    // 2. AÑADIMOS LO NUEVO
-    entidad.setPassword(dto.getPassword()); // La clave secreta
-    entidad.setRol(dto.getRol());           // El poder (ADMIN/CLIENTE)
+    @Override
+    public ClienteDTO registrar(ClienteRegistroDTO dto) {
+        if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+            throw new BadRequestException("La contraseña es obligatoria");
+        }
 
-    // 3. Guardar en DB
-    repository.save(entidad);
-    
-    return mapearDTO(entidad); // Devolvemos el DTO normal (SIN password)
-}
+        ClienteEntity entidad = new ClienteEntity();
+        entidad.setNombre(dto.getNombre());
+        entidad.setApellido(dto.getApellido());
+        entidad.setTipoIdentidad(dto.getTipoIdentidad());
+        entidad.setNumeroIdentidad(dto.getNumeroIdentidad());
 
-@Override
+        Contacto con = new Contacto();
+        con.setEmail(dto.getEmail());
+        con.setTelefono(dto.getTelefono());
+        con.setDireccion(dto.getDireccion());
+        entidad.setContacto(con);
+
+        entidad.setPassword(passwordEncoder.encode(dto.getPassword()));
+        entidad.setRol(dto.getRol() != null ? dto.getRol() : Rol.CLIENTE);
+        entidad.setActivo(true);
+
+        ClienteEntity guardado = repository.save(entidad);
+        return mapearDTO(guardado);
+    }
+
+    @Override
     public ClienteDTO guardar(ClienteDTO dto) {
         ClienteEntity cliente = mapearEntidad(dto);
-        repository.save(cliente);
-        dto.setId(cliente.getId());
-        return dto;
+        cliente.setRol(Rol.CLIENTE);
+        cliente.setActivo(true);
+        ClienteEntity guardado = repository.save(cliente);
+        return mapearDTO(guardado);
     }
 
     @Override
@@ -62,41 +71,38 @@ public ClienteDTO registrar(ClienteRegistroDTO dto) {
 
     @Override
     public ClienteDTO obtenerPorId(Long id) {
-        ClienteEntity cliente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con id: " + id));
-        return mapearDTO(cliente);
+        return repository.findById(id)
+                .map(this::mapearDTO)
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente no encontrado con id: " + id));
     }
 
     @Override
     public ClienteDTO actualizar(Long id, ClienteDTO dto) {
         ClienteEntity clienteExistente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No se puede actualizar, id no encontrado: " + id));
-        
-        // Actualizamos los campos
+                .orElseThrow(() -> new ResourceNotFoundException("No se puede actualizar, id no encontrado: " + id));
+
         clienteExistente.setNombre(dto.getNombre());
         clienteExistente.setApellido(dto.getApellido());
         clienteExistente.setTipoIdentidad(dto.getTipoIdentidad());
         clienteExistente.setNumeroIdentidad(dto.getNumeroIdentidad());
-        
+
         Contacto con = new Contacto();
         con.setEmail(dto.getEmail());
         con.setTelefono(dto.getTelefono());
         con.setDireccion(dto.getDireccion());
         clienteExistente.setContacto(con);
 
-        repository.save(clienteExistente);
-        return mapearDTO(clienteExistente);
+        ClienteEntity actualizado = repository.save(clienteExistente);
+        return mapearDTO(actualizado);
     }
 
     @Override
     public void eliminar(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("No se puede eliminar, id no existe: " + id);
+            throw new ResourceNotFoundException("No se puede eliminar, id no existe: " + id);
         }
         repository.deleteById(id);
     }
-
-    // --- MÉTODOS AUXILIARES DE MAPEO (Para no repetir código) ---
 
     private ClienteDTO mapearDTO(ClienteEntity entidad) {
         ClienteDTO dto = new ClienteDTO();
@@ -119,7 +125,7 @@ public ClienteDTO registrar(ClienteRegistroDTO dto) {
         entidad.setApellido(dto.getApellido());
         entidad.setTipoIdentidad(dto.getTipoIdentidad());
         entidad.setNumeroIdentidad(dto.getNumeroIdentidad());
-        
+
         Contacto con = new Contacto();
         con.setEmail(dto.getEmail());
         con.setTelefono(dto.getTelefono());

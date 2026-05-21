@@ -3,6 +3,7 @@ package com.grupo6.biblioteca_digital.Controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.grupo6.biblioteca_digital.model.dto.ClienteDTO;
 import com.grupo6.biblioteca_digital.model.dto.ClienteRegistroDTO;
 import com.grupo6.biblioteca_digital.service.ClienteService;
+
+import jakarta.validation.Valid;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,19 +36,19 @@ public class ClienteController {
 
     @Operation(summary = "Registrar usuario con credenciales", description = "Crea un cliente incluyendo su contraseña y rol de acceso.")
     @PostMapping("/registro")
-    public ResponseEntity<ClienteDTO> registrar(@RequestBody ClienteRegistroDTO dto) {
-        return ResponseEntity.ok(clienteService.registrar(dto));
-}
+    public ResponseEntity<ClienteDTO> registrar(@Valid @RequestBody ClienteRegistroDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(clienteService.registrar(dto));
+    }
     
     @Operation(summary = "Registrar nuevo cliente", description = "Crea un nuevo cliente en el sistema y le asigna un ID único.")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Cliente creado exitosamente"),
+        @ApiResponse(responseCode = "201", description = "Cliente creado exitosamente"),
         @ApiResponse(responseCode = "400", description = "Datos inválidos en el JSON enviado")
     })
 
     @PostMapping
-    public ResponseEntity<ClienteDTO> crear(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos planos del cliente a registrar") @RequestBody ClienteDTO dto) {
-        return ResponseEntity.ok(clienteService.guardar(dto));
+    public ResponseEntity<ClienteDTO> crear(@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos planos del cliente a registrar") @Valid @RequestBody ClienteDTO dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(clienteService.guardar(dto));
     }
 
 
@@ -65,7 +68,7 @@ public class ClienteController {
 
     // PUT: Actualizar un cliente existente
     @PutMapping("/{id}")
-    public ResponseEntity<ClienteDTO> actualizar(@PathVariable Long id, @RequestBody ClienteDTO dto) {
+    public ResponseEntity<ClienteDTO> actualizar(@PathVariable Long id, @Valid @RequestBody ClienteDTO dto) {
         // El servicio debería buscar por ID y luego actualizar con los datos del DTO
         return ResponseEntity.ok(clienteService.actualizar(id, dto));
     }
